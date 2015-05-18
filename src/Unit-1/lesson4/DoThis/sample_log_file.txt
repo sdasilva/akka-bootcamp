@@ -53,3 +53,7 @@ pretty cool
 time to write
 two lines at a time
 more working testing
+last time
+once again
+it works
+C:\Development\GitHub\akka-bootcamp\src\Unit-1\lesson4\DoThis\sample_log_file.txt
