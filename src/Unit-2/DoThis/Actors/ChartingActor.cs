@@ -6,7 +6,7 @@ using Akka.Actor;
 
 namespace ChartApp.Actors
 {
-    public class ChartingActor : UntypedActor
+    public class ChartingActor : ReceiveActor
     {
         #region Messages
 
@@ -20,12 +20,25 @@ namespace ChartApp.Actors
             public Dictionary<string, Series> InitialSeries { get; private set; }
         }
 
+        /// <summary>
+        /// Add new <see cref="Series"/> to the chart
+        /// </summary>
+        public class AddSeries
+        {
+            public Series Series { get; private set; }
+
+            public AddSeries(Series series)
+            {
+                Series = series;
+            }
+        }
         #endregion
 
         private readonly Chart _chart;
         private Dictionary<string, Series> _seriesIndex;
 
-        public ChartingActor(Chart chart) : this(chart, new Dictionary<string, Series>())
+        public ChartingActor(Chart chart)
+            : this(chart, new Dictionary<string, Series>())
         {
         }
 
@@ -33,16 +46,11 @@ namespace ChartApp.Actors
         {
             _chart = chart;
             _seriesIndex = seriesIndex;
+
+            Receive<InitializeChart>(ic => HandleInitialize(ic));
+            Receive<AddSeries>(addSeries => HandleAddSeries(addSeries));
         }
 
-        protected override void OnReceive(object message)
-        {
-            if (message is InitializeChart)
-            {
-                var ic = message as InitializeChart;
-                HandleInitialize(ic);
-            }
-        }
 
         #region Individual Message Type Handlers
 
@@ -69,6 +77,14 @@ namespace ChartApp.Actors
             }
         }
 
+        private void HandleAddSeries(AddSeries series)
+        {
+            if (!string.IsNullOrEmpty(series.Series.Name) && !_seriesIndex.ContainsKey(series.Series.Name))
+            {
+                _seriesIndex.Add(series.Series.Name, series.Series);
+                _chart.Series.Add(series.Series);
+            }
+        }
         #endregion
     }
 }
